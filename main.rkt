@@ -2,6 +2,7 @@
 
 (require net/url
          racket/cmdline
+         racket/format
          racket/path
          raco/command-name
          (prefix-in log: web-server/dispatchers/dispatch-log)
@@ -26,14 +27,6 @@
          (path/param (path->string d) null)))
      (url #f #f #f #f #t pp null #f)]))
 
-(define (make-file-link path)
-  (define basename
-    (path->string
-     (file-name-from-path path)))
-  (define rel-to-pwd
-    (find-relative-path (current-directory) path))
-  `(li (a ([href ,rel-to-pwd]) ,basename)))
-
 (define (files-list path)
   (for/list ([f (directory-list path #:build? #t)])
     (define name (path->string (file-name-from-path f)))
@@ -50,7 +43,7 @@
       `(html
         (body
          (h1 ,(url->string (request-uri req)))
-         ,@(files-list path)))))))
+         (ul ,@(files-list path))))))))
 
 (define (not-found req)
   (response/full 404 #"Not Found" (current-seconds) #f null null))
@@ -85,6 +78,8 @@
               (static-files:make #:url->path url->path)
               (directory-lister:make #:url->path url->path)
               (lift:make not-found)))))
+
+  (displayln (~a "Now serving " BASE " from http://localhost:" PORT))
 
   (with-handlers ([exn:break? void]) (do-not-return))
   (shutdown-server))
