@@ -3,6 +3,8 @@
 A little raco command to serve some files on the web.  Inspired by the command
 line mode of the python [http.server module](https://docs.python.org/3/library/http.server.html).
 
+![screen shot](screenshot.png)
+
 Contributors:
  - [Ben Knoble](https://github.com/benknoble) : original code, directory listing
  - [Ryan Culpepper](https://github.com/rmculpepper): command line
