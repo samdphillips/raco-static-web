@@ -54,24 +54,25 @@
              (h1 ,(url->string (request-uri req)))
              ,@(files-list path)))))))
 
-(define url->path
-  (make-url->path (current-directory)))
+(module* main #f
+  (define url->path
+    (make-url->path (current-directory)))
 
-(void
-  (serve #:port 8000
-         #:dispatch
-         (sequencer:make
-           (log:make #:format
-                     (log:log-format->format 'apache-default)
-                     #:log-path (current-output-port))
-           (static-files:make #:url->path url->path)
-           (directory-lister:make #:url->path url->path)
-           (lift:make
-             (gen-file-not-found-responder
-               (simplify-path
-                 (build-path web-server-collection 'up
-                             "default-web-root" "conf"
-                             "not-found.html")))))))
+  (void
+    (serve #:port 8000
+           #:dispatch
+           (sequencer:make
+             (log:make #:format
+                       (log:log-format->format 'apache-default)
+                       #:log-path (current-output-port))
+             (static-files:make #:url->path url->path)
+             (directory-lister:make #:url->path url->path)
+             (lift:make
+               (gen-file-not-found-responder
+                 (simplify-path
+                   (build-path web-server-collection 'up
+                               "default-web-root" "conf"
+                               "not-found.html")))))))
 
-(with-handlers ([exn:break? void]) (do-not-return))
+  (with-handlers ([exn:break? void]) (do-not-return)))
 
