@@ -16,6 +16,23 @@
          web-server/http/xexpr
          web-server/web-server)
 
+(define file-icon
+  (~a "data:image/png;base64,"
+      "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IAr"
+      "s4c6QAAAJRJREFUSEvtldsRQDAQRU9KUgGlUBml0IGOGDMYr82NWf7ie5"
+      "2zuUk2gZ+/8DOfFEENtC8aGYFiq1eCt/AbNyZ4gquGptWw11k/HOHNIaJ"
+      "PBFd4B9w6M/ZEruAJvrA+E2wg69C4I4oJBqASx1VGlBqF5ckCOTByRDmi"
+      "9JnjvmgybFFgvgc9UDrpp5mlpqPTRdKj75LMzaksGaIVe9kAAAAASUVOR"
+      "K5CYII="))
+
+(define folder-icon
+  (~a "data:image/png;base64,"
+      "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IAr"
+      "s4c6QAAAH5JREFUSEvtlcsNgDAMQ18nAzaHDRiFDUBFAvGpiKOqnNJz6h"
+      "c7VZpofFJjfX4FjED34WgGBmDxuL46WIWLbogXIPSwl+Q0stvbDBQHKuD"
+      "ULjmoHfzR6K4TgNJMIiLzpUZEEZGZgFzw2kXWhyMrAxPQP5edR0CurV3N"
+      "Jqg5YAORiSQZT6N44AAAAABJRU5ErkJggg=="))
+
 (define (relative-path-url-to-root p)
   (define simple-path (simplify-path p))
   (define rel-path (find-relative-path (current-directory) simple-path))
@@ -31,7 +48,12 @@
   (for/list ([f (directory-list path #:build? #t)])
     (define name (path->string (file-name-from-path f)))
     (define u (relative-path-url-to-root f))
-    `(li (a ([href ,(url->string u)]) ,name))))
+    (define icon
+      (if (directory-exists? f) folder-icon file-icon))
+    `(li (a ([href ,(url->string u)])
+            (img ([src ,icon]
+                  [style "vertical-align: middle"]) "")
+            (span ,name)))))
 
 (define (directory-lister:make #:url->path url->path)
   (lift:make
