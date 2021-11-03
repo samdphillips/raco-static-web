@@ -8,6 +8,6 @@ Contributors:
  - [Ryan Culpepper](https://github.com/rmculpepper): command line
  - [Sam Phillips](https://github.com/samdphillips) : shepherding, packaging
 
-file-line.png and folder-3-line.png icons from the
+file-line.png, folder-3-line.png, and folder-upload-line.png icons from the
 [Remix Icon](https://github.com/Remix-Design/RemixIcon) project.
 

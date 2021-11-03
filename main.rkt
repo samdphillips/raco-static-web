@@ -33,16 +33,37 @@
       "ULjmoHfzR6K4TgNJMIiLzpUZEEZGZgFzw2kXWhyMrAxPQP5edR0CurV3N"
       "Jqg5YAORiSQZT6N44AAAAABJRU5ErkJggg=="))
 
+(define folder-up-icon
+  (~a "data:image/png;base64,"
+      "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IAr"
+      "s4c6QAAALZJREFUSEvtldsNgzAMRQ8bdBNGKN2kTNaO0m7AKGxA5YhIQc"
+      "3DJqXwAd+Xe3xty2nY+Gs29uevgBdwzSQagBswWlKHCSbFj2ZIDBBr2wW"
+      "QhK2iCJGIVtIuZuATpOZihTgfbQJl4U62KPRwgPu8aX0m0uoEYv6YjZ9A"
+      "CrIKEJr74lMQMyBmnoOYAWG7S6tcvUUnwLW79oRXDVlzMooAjYlG83XsS"
+      "g+OxtRr3kD3i34XobUD3R/wAbP4MRlJ8mCBAAAAAElFTkSuQmCC"))
+
+(define root-url
+  (url #f #f #f #f #t null null #f))
+
+(define up-url
+  (url #f #f #f #f #f (list (path/param 'up null)) null #f))
+
 (define (relative-path-url-to-root p)
   (define simple-path (simplify-path p))
   (define rel-path (find-relative-path (current-directory) simple-path))
   (cond
-    [(equal? simple-path rel-path) (url #f #f #f #f #t null null #f)]
+    [(equal? simple-path rel-path) root-url]
     [else
      (define pp
        (for/list ([d (in-list (explode-path rel-path))])
          (path/param (path->string d) null)))
      (url #f #f #f #f #t pp null #f)]))
+
+(define (make-file-link icon url text)
+  `(li (a ([href ,(url->string url)])
+          (img ([src ,icon]
+                [style "vertical-align: middle"]) "")
+          ,text)))
 
 (define (files-list path)
   (for/list ([f (directory-list path #:build? #t)])
@@ -50,10 +71,7 @@
     (define u (relative-path-url-to-root f))
     (define icon
       (if (directory-exists? f) folder-icon file-icon))
-    `(li (a ([href ,(url->string u)])
-            (img ([src ,icon]
-                  [style "vertical-align: middle"]) "")
-            (span ,name)))))
+    (make-file-link icon u name)))
 
 (define (directory-lister:make #:url->path url->path)
   (lift:make
@@ -61,11 +79,16 @@
      (define-values (path pieces) (url->path (request-uri req)))
      (unless (directory-exists? path)
        (next-dispatcher))
+     (define dir-string
+       (url->string (request-uri req)))
      (response/xexpr
       `(html
         (body
-         (h1 ,(url->string (request-uri req)))
-         (ul ,@(files-list path))))))))
+         (h1 ,dir-string)
+         (ul ,@(if (string=? dir-string "/")
+                   null
+                   (list (make-file-link folder-up-icon up-url "..")))
+             ,@(files-list path))))))))
 
 (define (not-found req)
   (response/full 404 #"Not Found" (current-seconds) #f null null))
