@@ -1,21 +1,17 @@
 #lang racket/base
 
-(require (for-syntax racket/base)
-         net/url
+(require net/url
          racket/path
-         racket/runtime-path
          (prefix-in log: web-server/dispatchers/dispatch-log)
          (prefix-in sequencer: web-server/dispatchers/dispatch-sequencer)
          (prefix-in static-files: web-server/dispatchers/dispatch-files)
          (prefix-in lift: web-server/dispatchers/dispatch-lift)
-         web-server/configuration/responders
          web-server/dispatchers/dispatch
          web-server/dispatchers/filesystem-map
          web-server/http/request-structs
+         web-server/http/response-structs
          web-server/http/xexpr
          web-server/web-server)
-
-(define-runtime-path web-server-collection '(lib "web-server"))
 
 (define (relative-path-url-to-root p)
   (define simple-path (simplify-path p))
@@ -54,6 +50,9 @@
              (h1 ,(url->string (request-uri req)))
              ,@(files-list path)))))))
 
+(define (not-found req)
+  (response/full 404 #"Not Found" (current-seconds) #f null null))
+
 (module* main #f
   (define url->path
     (make-url->path (current-directory)))
@@ -67,12 +66,7 @@
                        #:log-path (current-output-port))
              (static-files:make #:url->path url->path)
              (directory-lister:make #:url->path url->path)
-             (lift:make
-               (gen-file-not-found-responder
-                 (simplify-path
-                   (build-path web-server-collection 'up
-                               "default-web-root" "conf"
-                               "not-found.html")))))))
+             (lift:make not-found))))
 
   (with-handlers ([exn:break? void]) (do-not-return)))
 
