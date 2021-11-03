@@ -7,4 +7,4 @@
 (define build-deps '())
 (define pkg-authors '(samdphillips@gmail.com))
 (define raco-commands
-  '(("static-web" raco-static-web "runs a webserver serving files for the current directory" 10)))
+  '(("static-web" raco-static-web "runs a webserver serving files from the given directory" 10)))
