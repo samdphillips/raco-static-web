@@ -3,6 +3,7 @@
 (require net/url
          racket/cmdline
          racket/format
+         racket/match
          racket/path
          raco/command-name
          (prefix-in log: web-server/dispatchers/dispatch-log)
@@ -79,13 +80,19 @@
      (define-values (path pieces) (url->path (request-uri req)))
      (unless (directory-exists? path)
        (next-dispatcher))
-     (define dir-string
-       (url->string (request-uri req)))
+     (define root-path?
+       (match pieces [(list 'same ...) #t] [_ #f]))
+     (define title-string
+       (~a "Directory of "
+           (url->string (request-uri req))))
      (response/xexpr
       `(html
+        (head
+         (title ,title-string))
         (body
-         (h1 ,dir-string)
-         (ul ,@(if (string=? dir-string "/")
+         (h1 ,title-string)
+         (hr)
+         (ul ,@(if root-path?
                    null
                    (list (make-file-link folder-up-icon up-url "..")))
              ,@(files-list path))))))))
