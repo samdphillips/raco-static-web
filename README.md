@@ -14,12 +14,18 @@ line mode of the python [http.server module](https://docs.python.org/3/library/h
 
 For help and options use `raco help static-web`.
 
-# Contributors:
- - [Ben Knoble](https://github.com/benknoble) : original code, directory listing
+## Contributors:
+ - [Ben Knoble](https://github.com/benknoble) : original code, directory listing, testing
  - [Ryan Culpepper](https://github.com/rmculpepper): command line
  - [Stephen De Gabrielle](https://github.com/spdegabrielle): docs
  - [Sam Phillips](https://github.com/samdphillips) : shepherding, packaging
 
 file-line.png, folder-3-line.png, and folder-upload-line.png icons from the
 [Remix Icon](https://github.com/Remix-Design/RemixIcon) project.
+
+## Plans
+Things I might add.  PRs welcome if you get to this before me.
+
+ - [ ] MIME types and more icons
+ - [ ] split out directory listing into separate package
 
