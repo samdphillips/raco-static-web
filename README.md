@@ -5,17 +5,19 @@ line mode of the python [http.server module](https://docs.python.org/3/library/h
 
 ![screen shot](screenshot.png)
 
-## Usage 
+## Usage
 
-1. ensure `raco` is in your $path
-2. open terminal in folder you want to serve
-3. `raco static web` to server the current folder
+1. Ensure `raco` is in your `$PATH`.
+2. Open terminal in folder you want to serve.
+  - Alternatively use the `-d` command line option to specify a directory.
+3. Run `raco static web` to serve the current folder.
 
 For help and options use `raco help static-web`.
 
 # Contributors:
  - [Ben Knoble](https://github.com/benknoble) : original code, directory listing
  - [Ryan Culpepper](https://github.com/rmculpepper): command line
+ - [Stephen De Gabrielle](https://github.com/spdegabrielle): docs
  - [Sam Phillips](https://github.com/samdphillips) : shepherding, packaging
 
 file-line.png, folder-3-line.png, and folder-upload-line.png icons from the
