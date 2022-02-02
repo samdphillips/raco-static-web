@@ -10,7 +10,7 @@ line mode of the python [http.server module](https://docs.python.org/3/library/h
 1. Ensure `raco` is in your `$PATH`.
 2. Open terminal in folder you want to serve.
   - Alternatively use the `-d` command line option to specify a directory.
-3. Run `raco static web` to serve the current folder.
+3. Run `raco static-web` to serve the current folder.
 
 For help and options use `raco help static-web`.
 
