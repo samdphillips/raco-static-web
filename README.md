@@ -8,9 +8,9 @@ line mode of the python [http.server module](https://docs.python.org/3/library/h
 ## Usage
 
 1. Ensure `raco` is in your `$PATH`.
-2. Open terminal in folder you want to serve.
+2. Open terminal in directory you want to serve.
   - Alternatively use the `-d` command line option to specify a directory.
-3. Run `raco static-web` to serve the current folder.
+3. Run `raco static-web` to serve the current directory.
 
 For help and options use `raco help static-web`.
 
@@ -18,6 +18,7 @@ For help and options use `raco help static-web`.
  - [Ben Knoble](https://github.com/benknoble) : original code, directory listing, testing
  - [Ryan Culpepper](https://github.com/rmculpepper): command line
  - [Stephen De Gabrielle](https://github.com/spdegabrielle): docs
+ - [Fred Fu](https://github.com/capfredf): docs
  - [Sam Phillips](https://github.com/samdphillips) : shepherding, packaging
 
 file-line.png, folder-3-line.png, and folder-upload-line.png icons from the
