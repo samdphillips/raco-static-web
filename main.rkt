@@ -2,9 +2,12 @@
 
 (require net/url
          racket/cmdline
+         racket/exn
+         racket/file
          racket/format
          racket/match
          racket/path
+         racket/runtime-path
          raco/command-name
          (prefix-in log: web-server/dispatchers/dispatch-log)
          (prefix-in sequencer: web-server/dispatchers/dispatch-sequencer)
@@ -16,6 +19,8 @@
          web-server/http/response-structs
          web-server/http/xexpr
          web-server/web-server)
+
+(define-runtime-path favicon-path "favicon.png")
 
 (define file-icon
   (~a "data:image/png;base64,"
@@ -89,6 +94,9 @@
       `(html
         (head
          (title ,title-string))
+         (link ([rel "icon"]
+                [type "image/png"]
+                [href "favicon.png"]))
         (body
          (h1 ,title-string)
          (hr)
@@ -96,6 +104,25 @@
                    null
                    (list (make-file-link folder-up-icon up-url "..")))
              ,@(files-list path))))))))
+
+(define (favicon-request? req)
+  (match (url-path (request-uri req))
+    [(list (path/param "favicon.png" '())) #t]
+    [_ #f]))
+
+(define (favicon:make)
+  (lift:make
+    (lambda (req)
+      (with-handlers ([exn:fail?
+                        (λ (e) (log-error
+                                 "an error occurred serving favicon~%  ~a"
+                                 (exn->string e))
+                               (next-dispatcher))])
+        (cond
+          [(favicon-request? req)
+           (response/full 200 #"OK" (current-seconds) #"image/png" null
+                          (list (file->bytes favicon-path)))]
+          [else (next-dispatcher)])))))
 
 (define (not-found req)
   (response/full 404 #"Not Found" (current-seconds) #f null null))
@@ -128,6 +155,7 @@
                         (log:log-format->format 'apache-default)
                         #:log-path (current-output-port))
               (static-files:make #:url->path url->path)
+              (favicon:make)
               (directory-lister:make #:url->path url->path)
               (lift:make not-found)))))
 
