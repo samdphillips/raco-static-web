@@ -98,7 +98,15 @@
              ,@(files-list path))))))))
 
 (define (not-found req)
-  (response/full 404 #"Not Found" (current-seconds) #f null null))
+  (response/xexpr
+   #:code 404
+   #:message #"Not Found"
+   #:seconds (current-seconds)
+   #:mime-type #f
+   `(html (head (title "Error response"))
+          (body (h1 "Error response")
+                (p "Error code: 404")
+                (p "Message: File not found.")))))
 
 (module* main #f
   (define BASE (current-directory))
