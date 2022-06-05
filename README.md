@@ -19,6 +19,8 @@ For help and options use `raco help static-web`.
  - [Ryan Culpepper](https://github.com/rmculpepper): command line
  - [Stephen De Gabrielle](https://github.com/spdegabrielle): docs
  - [Fred Fu](https://github.com/capfredf): docs
+ - [Sorawee Porncharoenwase](https://github.com/sorawee): 404 page, upstream
+   enhancements.
  - [Sam Phillips](https://github.com/samdphillips) : shepherding, packaging
 
 file-line.png, folder-3-line.png, and folder-upload-line.png icons from the
