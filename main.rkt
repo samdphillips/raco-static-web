@@ -1,6 +1,7 @@
 #lang racket/base
 
-(require net/url
+(require net/mime-type
+         net/url
          racket/cmdline
          racket/exn
          racket/file
@@ -165,7 +166,8 @@
               (log:make #:format
                         (log:log-format->format 'apache-default)
                         #:log-path (current-output-port))
-              (static-files:make #:url->path url->path)
+              (static-files:make #:url->path url->path
+                                 #:path->mime-type path-mime-type)
               (favicon:make)
               (directory-lister:make #:url->path url->path)
               (lift:make not-found)))))
