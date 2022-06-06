@@ -79,6 +79,18 @@
       (if (directory-exists? f) folder-icon file-icon))
     (make-file-link icon u name)))
 
+(define (make-template-xexpr title-string body)
+  `(html
+     (head
+       (title ,title-string))
+       (link ([rel "icon"]
+              [type "image/png"]
+              [href "favicon.png"]))
+     (body
+       (h1 ,title-string)
+       (hr)
+       ,body)))
+
 (define (directory-lister:make #:url->path url->path)
   (lift:make
    (lambda (req)
@@ -91,19 +103,11 @@
        (~a "Directory of "
            (url->string (request-uri req))))
      (response/xexpr
-      `(html
-        (head
-         (title ,title-string))
-         (link ([rel "icon"]
-                [type "image/png"]
-                [href "favicon.png"]))
-        (body
-         (h1 ,title-string)
-         (hr)
-         (ul ,@(if root-path?
-                   null
-                   (list (make-file-link folder-up-icon up-url "..")))
-             ,@(files-list path))))))))
+      (make-template-xexpr title-string
+                           `(ul ,@(if root-path?
+                                      null
+                                      (list (make-file-link folder-up-icon up-url "..")))
+                                ,@(files-list path)))))))
 
 (define (favicon-request? req)
   (match (url-path (request-uri req))
@@ -130,10 +134,9 @@
    #:message #"Not Found"
    #:seconds (current-seconds)
    #:mime-type #f
-   `(html (head (title "Error response"))
-          (body (h1 "Error response")
-                (p "Error code: 404")
-                (p "Message: File not found.")))))
+   (make-template-xexpr "Error response"
+                        '(div (p "Error code: 404")
+                              (p "Message: File not found.")))))
 
 (module* main #f
   (define BASE (current-directory))
