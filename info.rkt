@@ -2,7 +2,7 @@
 
 (define name "raco-static-web")
 (define collection "raco-static-web")
-(define version "0.9.9")
+(define version "1.0.0")
 (define deps '("base" "web-server-lib" "mime-type-lib"))
 (define build-deps '())
 (define pkg-authors '(samdphillips@gmail.com))
