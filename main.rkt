@@ -2,6 +2,7 @@
 
 (require net/mime-type
          net/url
+         racket/string
          racket/cmdline
          racket/exn
          racket/file
@@ -10,7 +11,6 @@
          racket/path
          racket/runtime-path
          raco/command-name
-         (prefix-in log: web-server/dispatchers/dispatch-log)
          (prefix-in sequencer: web-server/dispatchers/dispatch-sequencer)
          (prefix-in static-files: web-server/dispatchers/dispatch-files)
          (prefix-in lift: web-server/dispatchers/dispatch-lift)
@@ -19,7 +19,45 @@
          web-server/http/request-structs
          web-server/http/response-structs
          web-server/http/xexpr
-         web-server/web-server)
+         web-server/web-server
+         version-case
+         (for-syntax racket/base))
+
+(define (my:path-mime-type p)
+  (cond
+    [(string-suffix? (~a p) ".gz")
+     #"application/gzip"]
+    [else (path-mime-type p)]))
+
+(version-case
+ [(version< (version) "8.6")
+  (begin
+    (require (prefix-in log: web-server/dispatchers/dispatch-log))
+    (define-syntax-rule (with-logging (option ...)
+                          dispatcher ...)
+      (sequencer:make (log:make option ...)
+                      dispatcher ...))
+
+    (define (files:make url->path _gzip?)
+      (static-files:make #:url->path url->path
+                         #:path->mime-type my:path-mime-type)))]
+ [else
+  (begin
+    (require (prefix-in log: web-server/dispatchers/dispatch-logresp))
+    (define-syntax-rule (with-logging (option ...)
+                          dispatcher ...)
+      (log:make option ...
+                (sequencer:make dispatcher ...)))
+    (define ((path->headers gzip?) p)
+      (cond
+        [(and gzip? (string-suffix? (~a p) ".gz"))
+         (list (header #"Content-Encoding" #"gzip"))]
+        [else '()]))
+    (define (files:make url->path gzip?)
+      (static-files:make #:url->path url->path
+                         #:path->mime-type my:path-mime-type
+                         #:path->headers (path->headers gzip?))))])
+
 
 (define-runtime-path favicon-path "favicon.png")
 
@@ -142,6 +180,7 @@
 (module* main #f
   (define BASE (current-directory))
   (define PORT 8000)
+  (define GZIP? #t)
   (command-line
    #:program (short-program+command-name)
    #:once-each
@@ -153,6 +192,8 @@
       (set! PORT portn))]
    [("-d" "--dir") dir "Base directory (default: current directory)"
     (set! BASE (string->path dir))]
+   [("--no-gzip") "Do not use Content-Encoding 'gzip' on .gz files (for Racket <8.6, this option will always be on whether it's provided)"
+    (set! GZIP? #f)]
    #:args ()
    (void))
 
@@ -162,15 +203,12 @@
         (make-url->path (current-directory)))
       (serve #:port PORT
              #:dispatch
-             (sequencer:make
-              (log:make #:format
-                        (log:log-format->format 'apache-default)
-                        #:log-path (current-output-port))
-              (static-files:make #:url->path url->path
-                                 #:path->mime-type path-mime-type)
-              (favicon:make)
-              (directory-lister:make #:url->path url->path)
-              (lift:make not-found)))))
+             (with-logging (#:format (log:log-format->format 'apache-default)
+                            #:log-path (current-output-port))
+               (files:make url->path GZIP?)
+               (favicon:make)
+               (directory-lister:make #:url->path url->path)
+               (lift:make not-found)))))
 
   (displayln (~a "Now serving " BASE " from http://localhost:" PORT))
 
