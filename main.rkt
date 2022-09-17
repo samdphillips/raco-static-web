@@ -23,12 +23,6 @@
          version-case
          (for-syntax racket/base))
 
-(define (my:path-mime-type p)
-  (cond
-    [(string-suffix? (~a p) ".gz")
-     #"application/gzip"]
-    [else (path-mime-type p)]))
-
 (version-case
  [(version< (version) "8.6")
   (begin
@@ -40,7 +34,7 @@
 
     (define (files:make url->path _gzip?)
       (static-files:make #:url->path url->path
-                         #:path->mime-type my:path-mime-type)))]
+                         #:path->mime-type path-mime-type)))]
  [else
   (begin
     (require (prefix-in log: web-server/dispatchers/dispatch-logresp))
@@ -55,7 +49,7 @@
         [else '()]))
     (define (files:make url->path gzip?)
       (static-files:make #:url->path url->path
-                         #:path->mime-type my:path-mime-type
+                         #:path->mime-type path-mime-type
                          #:path->headers (path->headers gzip?))))])
 
 
