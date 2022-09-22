@@ -15,12 +15,13 @@ line mode of the python [http.server module](https://docs.python.org/3/library/h
 For help and options use `raco help static-web`.
 
 ## Contributors:
- - [Ben Knoble](https://github.com/benknoble) : original code, directory listing, testing
+ - [Ben Knoble](https://github.com/benknoble) : original code, directory
+   listing, testing
  - [Ryan Culpepper](https://github.com/rmculpepper): command line
  - [Stephen De Gabrielle](https://github.com/spdegabrielle): docs
  - [Fred Fu](https://github.com/capfredf): docs
  - [Sorawee Porncharoenwase](https://github.com/sorawee): 404 page, upstream
-   enhancements.
+   enhancements, response logging, gzip content encoding
  - [Sam Phillips](https://github.com/samdphillips) : shepherding, packaging
 
 file-line.png, folder-3-line.png, and folder-upload-line.png icons from the
