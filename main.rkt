@@ -1,6 +1,7 @@
 #lang racket/base
 
 (require net/mime-type
+         net/sendurl
          net/url
          racket/string
          racket/cmdline
@@ -175,6 +176,7 @@
   (define BASE (current-directory))
   (define PORT 8000)
   (define GZIP? #t)
+  (define LAUNCH? #f)
   (command-line
    #:program (short-program+command-name)
    #:once-each
@@ -186,11 +188,14 @@
       (set! PORT portn))]
    [("-d" "--dir") dir "Base directory (default: current directory)"
     (set! BASE (string->path dir))]
+   [("-l" "--launch") "Launch browser after starting server"
+    (set! LAUNCH? #t)]
    [("--no-gzip") "Do not use Content-Encoding 'gzip' on .gz files (for Racket <8.6, this option will always be on whether it's provided)"
     (set! GZIP? #f)]
    #:args ()
    (void))
 
+  (define server-url (~a "http://localhost:" PORT))
   (define shutdown-server
     (parameterize ([current-directory BASE])
       (define url->path
@@ -204,7 +209,8 @@
                (directory-lister:make #:url->path url->path)
                (lift:make not-found)))))
 
-  (displayln (~a "Now serving " BASE " from http://localhost:" PORT))
+  (displayln (~a "Now serving " BASE " from " server-url))
+  (when LAUNCH? (send-url server-url))
 
   (with-handlers ([exn:break? void]) (do-not-return))
   (shutdown-server))
