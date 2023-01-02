@@ -1,8 +1,8 @@
 #lang racket/base
 
-(require net/mime-type
+(require (for-syntax racket/base)
+         net/mime-type
          net/url
-         racket/string
          racket/cmdline
          racket/exn
          racket/file
@@ -10,6 +10,7 @@
          racket/match
          racket/path
          racket/runtime-path
+         racket/string
          raco/command-name
          (prefix-in sequencer: web-server/dispatchers/dispatch-sequencer)
          (prefix-in static-files: web-server/dispatchers/dispatch-files)
@@ -20,8 +21,7 @@
          web-server/http/response-structs
          web-server/http/xexpr
          web-server/web-server
-         version-case
-         (for-syntax racket/base))
+         version-case)
 
 (version-case
  [(version< (version) "8.6")
@@ -161,7 +161,7 @@
                           (list (file->bytes favicon-path)))]
           [else (next-dispatcher)])))))
 
-(define (not-found req)
+(define (not-found _req)
   (response/xexpr
    #:code 404
    #:message #"Not Found"
