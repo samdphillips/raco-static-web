@@ -82,10 +82,10 @@
       "g+OxtRr3kD3i34XobUD3R/wAbP4MRlJ8mCBAAAAAElFTkSuQmCC"))
 
 (define root-url
-  (url #f #f #f #f #t null null #f))
+  (string->url ""))
 
 (define up-url
-  (url #f #f #f #f #f (list (path/param 'up null)) null #f))
+  (string->url ".."))
 
 (define (relative-path-url-to-root p)
   (define simple-path (simplify-path p))
@@ -208,4 +208,3 @@
 
   (with-handlers ([exn:break? void]) (do-not-return))
   (shutdown-server))
-
