@@ -14,6 +14,26 @@ line mode of the python [http.server module](https://docs.python.org/3/library/h
 
 For help and options use `raco help static-web`.
 
+## Changelog
+### 1.1.0
+Release date: 2023/01/06
+- Add the `--launch` option to open a browser after starting.
+
+## 1.0.1
+Release date: 2022/09/22
+- Use response logging
+- Support for content-encoding: gzip
+
+## 1.0.0
+Release date: 2022/06/05
+- Add content-type headers
+- Use a non non-blank 404
+- Add favicon
+
+## 0.9.9
+Release date: 2021/11/03
+- Initial release
+
 ## Contributors:
  - [Ben Knoble](https://github.com/benknoble) : original code, directory
    listing, testing
