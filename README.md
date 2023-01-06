@@ -19,6 +19,7 @@ For help and options use `raco help static-web`.
    listing, testing
  - [Ryan Culpepper](https://github.com/rmculpepper): command line
  - [Stephen De Gabrielle](https://github.com/spdegabrielle): docs
+ - [Joel Dueck](https://github.com/otherjoel): `--launch` option
  - [Fred Fu](https://github.com/capfredf): docs
  - [Sorawee Porncharoenwase](https://github.com/sorawee): 404 page, upstream
    enhancements, response logging, gzip content encoding
