@@ -203,7 +203,7 @@
       (serve #:port PORT
              #:dispatch
              (with-logging (#:format (log:log-format->format 'apache-default)
-                            #:log-path (current-output-port))
+                            #:log-path (current-error-port))
                (files:make url->path GZIP?)
                (favicon:make)
                (directory-lister:make #:url->path url->path)
