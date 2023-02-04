@@ -209,7 +209,7 @@
                (directory-lister:make #:url->path url->path)
                (lift:make not-found)))))
 
-  (displayln (~a "Now serving " BASE " from " server-url))
+  (displayln (~a "Now serving " BASE " from " server-url) (current-error-port))
   (when LAUNCH? (send-url server-url))
 
   (with-handlers ([exn:break? void]) (do-not-return))
