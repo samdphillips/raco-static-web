@@ -203,13 +203,13 @@
       (serve #:port PORT
              #:dispatch
              (with-logging (#:format (log:log-format->format 'apache-default)
-                            #:log-path (current-output-port))
+                            #:log-path (current-error-port))
                (files:make url->path GZIP?)
                (favicon:make)
                (directory-lister:make #:url->path url->path)
                (lift:make not-found)))))
 
-  (displayln (~a "Now serving " BASE " from " server-url))
+  (displayln (~a "Now serving " BASE " from " server-url) (current-error-port))
   (when LAUNCH? (send-url server-url))
 
   (with-handlers ([exn:break? void]) (do-not-return))
