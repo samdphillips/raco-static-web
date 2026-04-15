@@ -3,7 +3,7 @@
 (require net/mime-type
          net/sendurl
          net/url
-         racket/string
+         racket/async-channel
          racket/cmdline
          racket/exn
          racket/file
@@ -11,6 +11,7 @@
          racket/match
          racket/path
          racket/runtime-path
+         racket/string
          raco/command-name
          (prefix-in sequencer: web-server/dispatchers/dispatch-sequencer)
          (prefix-in static-files: web-server/dispatchers/dispatch-files)
@@ -175,17 +176,30 @@
 (module* main #f
   (define BASE (current-directory))
   (define PORT 8000)
+  (define PORT-SCAN 'sequential)
   (define GZIP? #t)
   (define LAUNCH? #f)
+  (define (argument-error fmt . args)
+    (raise-user-error
+     (apply format (format "~a: ~a" (short-program+command-name) fmt) args)))
   (command-line
    #:program (short-program+command-name)
    #:once-each
-   [("-p" "--port") port [(format "Port to listen on (default: ~s)" PORT)]
+   [("-p" "--port") port
+    [(format "Port to listen on (default: ~s)" PORT)]
     (let ([portn (string->number port)])
       (unless (exact-positive-integer? portn)
-        (raise-user-error
-         (format "~a: bad port number: ~e" (short-program+command-name) port)))
+        (argument-error "bad port number: ~e" port))
       (set! PORT portn))]
+   [("-s" "--scan") scan-strategy
+    ["Port scanning strategy if port is not free (default: sequential)"
+     "  strategy: sequential - starts at port until a free port is found"
+     "            none - do not scan for a free port"]
+    (set! PORT-SCAN
+          (match scan-strategy
+            ["sequential" 'sequential]
+            ["none" 'none]
+            [_ (argument-error "invalid scan strategy: ~e" scan-strategy)]))]
    [("-d" "--dir") dir "Base directory (default: current directory)"
     (set! BASE (string->path dir))]
    [("-l" "--launch") "Launch browser after starting server"
@@ -195,20 +209,48 @@
    #:args ()
    (void))
 
-  (define server-url (~a "http://localhost:" PORT))
-  (define shutdown-server
+  (define (start-server retry port dispatcher)
+    (define (port-error? ex)
+      (and (exn:fail:network? ex)
+           (regexp-match? #px"Address already in use" (exn-message ex))))
+    (define ch (make-async-channel))
+    (define shutdown-server
+      (serve #:confirmation-channel ch
+             #:port port
+             #:dispatch dispatcher))
+    (define maybe-err (sync ch))
+    (cond
+      [(port-error? maybe-err)
+       (retry maybe-err port dispatcher)]
+      [(exn:fail? maybe-err)
+       ;; some other error reported by the server, no retry
+       (exit)]
+      [else (values port shutdown-server)]))
+
+  (define-values (port shutdown-server)
     (parameterize ([current-directory BASE])
       (define url->path
         (make-url->path (current-directory)))
-      (serve #:port PORT
-             #:dispatch
-             (with-logging (#:format (log:log-format->format 'apache-default)
-                            #:log-path (current-output-port))
-               (files:make url->path GZIP?)
-               (favicon:make)
-               (directory-lister:make #:url->path url->path)
-               (lift:make not-found)))))
+      (define dispatcher
+        (with-logging (#:format (log:log-format->format 'apache-default)
+                       #:log-path (current-output-port))
+          (files:make url->path GZIP?)
+          (favicon:make)
+          (directory-lister:make #:url->path url->path)
+          (lift:make not-found)))
+      (define retry
+        (match PORT-SCAN
+          ['sequential
+           (lambda (err port dispatcher)
+             (start-server retry (add1 port) dispatcher))]
+          ['none
+           (lambda (err port dispatcher)
+             ;; do not need to raise err, because it already was raised (and
+             ;; reported to stderr) from the web server thread
+             (exit))]))
+      (start-server retry PORT dispatcher)))
 
+  (define server-url (~a "http://localhost:" port))
   (displayln (~a "Now serving " BASE " from " server-url))
   (when LAUNCH? (send-url server-url))
 
