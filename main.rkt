@@ -3,7 +3,6 @@
 (require net/mime-type
          net/sendurl
          net/url
-         racket/string
          racket/cmdline
          racket/exn
          racket/file
@@ -11,6 +10,7 @@
          racket/match
          racket/path
          racket/runtime-path
+         racket/string
          raco/command-name
          (prefix-in sequencer: web-server/dispatchers/dispatch-sequencer)
          (prefix-in static-files: web-server/dispatchers/dispatch-files)
@@ -177,20 +177,25 @@
   (define PORT 8000)
   (define GZIP? #t)
   (define LAUNCH? #f)
+  (define (argument-error fmt . args)
+    (raise-user-error
+     (apply format (format "~a: ~a" (short-program+command-name) fmt) args)))
   (command-line
    #:program (short-program+command-name)
    #:once-each
-   [("-p" "--port") port [(format "Port to listen on (default: ~s)" PORT)]
+   [("-p" "--port") port
+    [(format "Port to listen on (default: ~s)" PORT)]
     (let ([portn (string->number port)])
       (unless (exact-positive-integer? portn)
-        (raise-user-error
-         (format "~a: bad port number: ~e" (short-program+command-name) port)))
+        (argument-error "bad port number: ~e" port))
       (set! PORT portn))]
    [("-d" "--dir") dir "Base directory (default: current directory)"
     (set! BASE (string->path dir))]
    [("-l" "--launch") "Launch browser after starting server"
     (set! LAUNCH? #t)]
-   [("--no-gzip") "Do not use Content-Encoding 'gzip' on .gz files (for Racket <8.6, this option will always be on whether it's provided)"
+   [("--no-gzip")
+    ["Do not use Content-Encoding 'gzip' on .gz files"
+     "(for Racket <8.6, this option will always be on whether it's provided)"]
     (set! GZIP? #f)]
    #:args ()
    (void))
@@ -200,14 +205,15 @@
     (parameterize ([current-directory BASE])
       (define url->path
         (make-url->path (current-directory)))
+      (define dispatcher
+        (with-logging (#:format (log:log-format->format 'apache-default)
+                       #:log-path (current-output-port))
+          (files:make url->path GZIP?)
+          (favicon:make)
+          (directory-lister:make #:url->path url->path)
+          (lift:make not-found)))
       (serve #:port PORT
-             #:dispatch
-             (with-logging (#:format (log:log-format->format 'apache-default)
-                            #:log-path (current-output-port))
-               (files:make url->path GZIP?)
-               (favicon:make)
-               (directory-lister:make #:url->path url->path)
-               (lift:make not-found)))))
+             #:dispatch dispatcher)))
 
   (displayln (~a "Now serving " BASE " from " server-url))
   (when LAUNCH? (send-url server-url))
