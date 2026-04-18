@@ -3,6 +3,7 @@
 (require net/mime-type
          net/sendurl
          net/url
+         racket/async-channel
          racket/cmdline
          racket/exn
          racket/file
@@ -11,6 +12,7 @@
          racket/path
          racket/runtime-path
          racket/string
+         racket/tcp
          raco/command-name
          (prefix-in sequencer: web-server/dispatchers/dispatch-sequencer)
          (prefix-in static-files: web-server/dispatchers/dispatch-files)
@@ -174,7 +176,7 @@
 
 (module* main #f
   (define BASE (current-directory))
-  (define PORT 8000)
+  (define REQ-PORT 0)
   (define GZIP? #t)
   (define LAUNCH? #f)
   (define (argument-error fmt . args)
@@ -184,11 +186,11 @@
    #:program (short-program+command-name)
    #:once-each
    [("-p" "--port") port
-    [(format "Port to listen on (default: ~s)" PORT)]
+    "Port to listen on (default obtains a free port from the os)"
     (let ([portn (string->number port)])
       (unless (exact-positive-integer? portn)
         (argument-error "bad port number: ~e" port))
-      (set! PORT portn))]
+      (set! REQ-PORT portn))]
    [("-d" "--dir") dir "Base directory (default: current directory)"
     (set! BASE (string->path dir))]
    [("-l" "--launch") "Launch browser after starting server"
@@ -200,7 +202,7 @@
    #:args ()
    (void))
 
-  (define server-url (~a "http://localhost:" PORT))
+  (define confirm-ch (make-async-channel))
   (define shutdown-server
     (parameterize ([current-directory BASE])
       (define url->path
@@ -212,9 +214,16 @@
           (favicon:make)
           (directory-lister:make #:url->path url->path)
           (lift:make not-found)))
-      (serve #:port PORT
-             #:dispatch dispatcher)))
+      (serve #:port REQ-PORT
+             #:dispatch dispatcher
+             #:confirmation-channel confirm-ch)))
 
+  (define port
+    (match (async-channel-get confirm-ch)
+      [(? port-number? port) port]
+      [(? exn? e) (exit)]))
+
+  (define server-url (~a "http://localhost:" port))
   (displayln (~a "Now serving " BASE " from " server-url))
   (when LAUNCH? (send-url server-url))
 
