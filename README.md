@@ -15,7 +15,11 @@ line mode of the python [http.server module](https://docs.python.org/3/library/h
 For help and options use `raco help static-web`.
 
 ## Changelog
-### 1.1.0
+## 1.2.0
+Release date: 2026/04/18
+- Default port now lets the OS choose a free port.
+
+## 1.1.0
 Release date: 2023/01/06
 - Add the `--launch` option to open a browser after starting.
 
@@ -43,7 +47,8 @@ Release date: 2021/11/03
  - [Fred Fu](https://github.com/capfredf): docs
  - [Sorawee Porncharoenwase](https://github.com/sorawee): 404 page, upstream
    enhancements, response logging, gzip content encoding
- - [Sam Phillips](https://github.com/samdphillips) : shepherding, packaging
+ - [Jens Soegaard](https://github.com/soegaard): suggestions, testing
+ - [Sam Phillips](https://github.com/samdphillips): shepherding, packaging
 
 file-line.png, folder-3-line.png, and folder-upload-line.png icons from the
 [Remix Icon](https://github.com/Remix-Design/RemixIcon) project.
